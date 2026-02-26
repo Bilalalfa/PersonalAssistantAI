@@ -50,8 +50,8 @@ VisionAssist adalah aplikasi desktop berbasis Python yang dirancang untuk memban
 
 1.  **Clone Repositori**:
     ```bash
-    git clone [https://github.com/username/VisionAssist.git](https://github.com/username/VisionAssist.git)
-    cd VisionAssist
+    https://github.com/Bilalalfa/PersonalAssistantAI.git
+    cd PersonalAssistantAI
     ```
 
 2.  **Instal Dependensi**:
