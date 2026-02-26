@@ -45,6 +45,18 @@ VisionAssist adalah aplikasi desktop berbasis Python yang dirancang untuk memban
 8.  **Minggu 8**: Pengujian akhir, perbaikan bug, dan dokumentasi.
 
 ---
+## 🚀 Struktur Proyek
+VisionAssist/
+├── assets/             # Gambar, logo, dan tangkapan layar UI
+├── database/           # Script SQL untuk setup tabel MySQL
+├── docs/               # Dokumentasi tambahan (Manual user, desain Figma)
+├── src/                # Kode sumber utama (Source Code)
+│   ├── ui/             # File .ui atau file styling .qss
+│   ├── modules/        # Logika database, konektor AI, dan helper
+│   └── main.py         # Entry point aplikasi
+├── .gitignore          # File untuk mengabaikan venv dan file sensitif
+├── README.md           # Dokumentasi utama proyek
+└── requirements.txt    # Daftar library Python yang dibutuhkan
 
 ## 🚀 Cara Menjalankan Proyek
 
