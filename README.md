@@ -62,8 +62,8 @@ Pastikan sudah terinstall:
 ### 1 — Clone Repository
 
 ```bash
-git clone https://github.com/username/VisionAssist.git
-cd VisionAssist
+https://github.com/Bilalalfa/PersonalAssistantAI.git
+cd PersonalAssistantAI
 ```
 
 ### 2 — Buat Virtual Environment
