@@ -118,35 +118,19 @@ python src/main.py
 ## 📁 Struktur Proyek
 
 ```
-VisionAssist/
+personal_ai_assistant/
 │
-├── assets/                    # Gambar, logo, dan tangkapan layar UI
+├── src/                # All your Python source code
+│   ├── main.py         # The entry point to run your app
+│   ├── gui/            # PyQt6 windows and styling (QSS)
+│   ├── ai/             # Ollama integration logic
+│   └── database/       # MySQL connection and CRUD functions
 │
-├── database/
-│   └── setup.sql              # Script SQL — jalankan sekali untuk setup tabel
-│
-├── docs/                      # Dokumentasi tambahan, desain Figma, manual user
-│
-├── src/                       # Kode sumber utama
-│   │
-│   ├── ui/                    # Tampilan antarmuka (Frontend Developer)
-│   │   ├── main_window.py     # Jendela utama — menyatukan semua panel
-│   │   ├── chat_panel.py      # Panel chat dengan AI
-│   │   ├── task_panel.py      # Panel daftar tugas + dialog tambah
-│   │   └── style.qss          # Stylesheet dark mode (Catppuccin Mocha)
-│   │
-│   ├── modules/               # Logika inti aplikasi
-│   │   ├── config.py          # Pembaca konfigurasi .env (AI Developer)
-│   │   ├── db_connector.py    # Koneksi & CRUD MySQL (Database Developer)
-│   │   ├── ai_connector.py    # Koneksi Ollama + QThread worker (AI Developer)
-│   │   └── helpers.py         # Fungsi pembantu (format tanggal, ikon, dll)
-│   │
-│   └── main.py                # ▶ Entry point — jalankan file ini
-│
-├── .env.example               # Template konfigurasi (aman di-commit)
-├── .gitignore                 # Mengabaikan .env, venv, __pycache__
-├── README.md                  # Dokumentasi utama proyek
-└── requirements.txt           # Daftar library Python yang dibutuhkan
+├── assets/             # Icons, images, and Figma exports
+├── tests/              # Scripts to test your AI and DB connections
+├── .gitignore          # Files Git should ignore (like __pycache__)
+├── requirements.txt    # List of libraries (PyQt6, mysql-connector, etc.)
+└── README.md           # Project description and setup guide
 ```
 
 ---
