@@ -407,9 +407,20 @@ class OllamaAIApp(QMainWindow):
         cdc_layout.setContentsMargins(0, 0, 0, 0)
         cdc_layout.setSpacing(0)
         
-        self.display = QTextBrowser()
-        self.display.setObjectName("ChatDisplay")
-        cdc_layout.addWidget(self.display)
+        self.chat_scroll_area = QScrollArea()
+        self.chat_scroll_area.setObjectName("ChatDisplay")
+        self.chat_scroll_area.setWidgetResizable(True)
+        self.chat_scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; } QScrollBar:vertical { width: 10px; background: transparent; }")
+        
+        self.chat_history_widget = QWidget()
+        self.chat_history_widget.setStyleSheet("background-color: transparent;")
+        self.chat_history_layout = QVBoxLayout(self.chat_history_widget)
+        self.chat_history_layout.setContentsMargins(20, 20, 20, 20)
+        self.chat_history_layout.setSpacing(15)
+        self.chat_history_layout.addStretch()
+        
+        self.chat_scroll_area.setWidget(self.chat_history_widget)
+        cdc_layout.addWidget(self.chat_scroll_area)
         
         self.loading_anim = LoadingAnimation()
         cdc_layout.addWidget(self.loading_anim)
@@ -536,6 +547,73 @@ class OllamaAIApp(QMainWindow):
         btn.clicked.connect(lambda checked, sid=session_id: self.load_chat(sid))
         self.chat_layout.insertWidget(0, btn)
 
+    def create_chat_bubble(self, is_user, html_text):
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        bubble_frame = QFrame()
+        bubble_layout = QVBoxLayout(bubble_frame)
+        bubble_layout.setContentsMargins(15, 12, 15, 12)
+        
+        bubble_label = QLabel(html_text)
+        bubble_label.setWordWrap(True)
+        bubble_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        bubble_label.setMaximumWidth(600)
+        
+        bubble_layout.addWidget(bubble_label)
+        
+        if is_user:
+            bubble_frame.setStyleSheet("""
+                QFrame {
+                    background-color: #b538b0;
+                    border-radius: 18px;
+                }
+                QLabel {
+                    color: #ffffff;
+                    font-size: 14px;
+                    line-height: 1.4;
+                    background-color: transparent;
+                }
+            """)
+            
+            avatar = QLabel("👱🏻‍♀️")
+            avatar.setStyleSheet("font-size: 24px; background-color: transparent;")
+            avatar.setFixedSize(36, 36)
+            avatar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+            
+            layout.addStretch()
+            layout.addWidget(bubble_frame)
+            layout.addWidget(avatar)
+            layout.setAlignment(bubble_frame, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+            layout.setAlignment(avatar, Qt.AlignmentFlag.AlignTop)
+        else:
+            bubble_frame.setStyleSheet("""
+                QFrame {
+                    background-color: #202020;
+                    border-radius: 18px;
+                }
+                QLabel {
+                    color: #e1e1e6;
+                    font-size: 14px;
+                    line-height: 1.4;
+                    background-color: transparent;
+                }
+            """)
+            
+            avatar = QLabel("✨")
+            avatar.setStyleSheet("font-size: 20px; background-color: #111; border-radius: 12px; padding: 5px;")
+            avatar.setFixedSize(36, 36)
+            avatar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+            
+            layout.addWidget(avatar)
+            layout.addWidget(bubble_frame)
+            layout.addStretch()
+            layout.setAlignment(bubble_frame, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+            layout.setAlignment(avatar, Qt.AlignmentFlag.AlignTop)
+            
+        return container
+
     def append_message(self, sender, text, save=True):
         is_user = sender == "You"
         formatted_text = text.replace('\n', '<br>')
@@ -558,49 +636,12 @@ class OllamaAIApp(QMainWindow):
             else:
                 self.chat_sessions[self.current_session_id]["llm_history"].append(f"AI: {text}")
 
-        if is_user:
-            # Pesan Pengguna: Rata Kanan, Bubble Pink/Purple solid untuk mensimulasikan gradient
-            full_html = f"""
-            <table width="100%" style="margin-top: 10px; margin-bottom: 10px;">
-                <tr>
-                    <td align="right" valign="top">
-                        <table style="background-color: #b538b0; border-radius: 18px;">
-                            <tr>
-                                <td style="padding: 12px 18px; color: #ffffff; font-size: 14px; line-height: 1.4;">
-                                    {formatted_text}
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td width="45" align="center" valign="top">
-                        <div style="font-size: 24px;">👱🏻‍♀️</div>
-                    </td>
-                </tr>
-            </table>
-            """
-        else:
-            # Pesan AI: Rata Kiri, Bubble Abu-abu Gelap tanpa style border di kiri, sesuai image
-            full_html = f"""
-            <table width="100%" style="margin-top: 10px; margin-bottom: 10px;">
-                <tr>
-                    <td width="45" align="center" valign="top">
-                        <div style="font-size: 20px; background-color: #111; border-radius: 12px; padding: 5px;">✨</div>
-                    </td>
-                    <td align="left" valign="top">
-                        <table style="background-color: #202020; border-radius: 18px;">
-                            <tr>
-                                <td style="padding: 12px 18px; color: #e1e1e6; font-size: 14px; line-height: 1.4;">
-                                    {formatted_text}
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-            """
+        bubble_container = self.create_chat_bubble(is_user, formatted_text)
+        self.chat_history_layout.insertWidget(self.chat_history_layout.count() - 1, bubble_container)
 
-        self.display.append(full_html)
-        self.display.moveCursor(QTextCursor.MoveOperation.End)
+        QApplication.processEvents()
+        scrollbar = self.chat_scroll_area.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
     def handle_send(self):
         text = self.input_field.text().strip()
@@ -622,13 +663,20 @@ class OllamaAIApp(QMainWindow):
         self.loading_anim.hide()
         self.append_message("Ollama AI", response, save=True)
 
+    def clear_chat_history(self):
+        while self.chat_history_layout.count() > 1:
+            item = self.chat_history_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
     def reset_chat(self):
-        self.display.clear()
+        self.clear_chat_history()
         self.current_session_id = None
         self.chat_stack.setCurrentIndex(0)
 
     def load_chat(self, session_id):
-        self.display.clear()
+        self.clear_chat_history()
         self.current_session_id = session_id
         self.chat_stack.setCurrentIndex(1)
         session_data = self.chat_sessions[session_id]
