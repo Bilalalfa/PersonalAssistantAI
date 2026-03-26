@@ -7,34 +7,14 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QTableWidgetItem, QHeaderView, QMessageBox, QCalendarWidget)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize
 from PyQt6.QtGui import QFont, QTextCursor, QColor, QPixmap, QIcon
-from langchain_ollama import OllamaLLM
 import mysql.connector
 from mysql.connector import errorcode
 import os
 
 from style import STYLE_SHEET, COLOR_ACCENT
-
-class ChatWorker(QThread):
-    response_ready = pyqtSignal(str)
-    
-    def __init__(self, model, context, images=None):
-        super().__init__()
-        self.model = model
-        self.context = context
-        self.images = images
-        
-    def run(self):
-        try:
-            llm = OllamaLLM(model=self.model)
-            if self.images:
-                # Note: OllamaLLM from langchain_ollama supports 'images' in bind or invoke
-                # However, raw invoke might need specific formatting for vision
-                response = llm.invoke(self.context, images=self.images)
-            else:
-                response = llm.invoke(self.context)
-            self.response_ready.emit(response)
-        except Exception as e:
-            self.response_ready.emit(f"Error: {str(e)}")
+from ai_engine import ChatWorker, get_models, encode_image
+from db_handler import (get_db_connection, init_db, load_tasks_from_db, 
+                        add_task_to_db, delete_task_from_db, complete_task_in_db)
 
 class LoadingAnimation(QLabel):
     def __init__(self):
@@ -42,6 +22,7 @@ class LoadingAnimation(QLabel):
         self.setObjectName("LoadingAnim")
         self.setText("Bot is typing...")
         self.hide()
+
 
 class ProfileSetupDialog(QDialog):
     def __init__(self):
@@ -112,72 +93,10 @@ class OllamaAIApp(QMainWindow):
 
     def init_db(self):
         print("DEBUG: Entering init_db")
-        try:
-            print("DEBUG: Attempting to connect to MySQL (pure Python mode)...")
-            self.db = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="",
-                database="ollama_assistant",
-                use_pure=True,  # Menggunakan implementasi Python murni untuk menghindari crash DLL
-                connection_timeout=5 # Timeout agar tidak gantung
-            )
-            print("DEBUG: Connected successfully to existing database.")
-        except mysql.connector.Error as err:
-            print(f"DEBUG: MySQL Error caught: {err.errno} - {err}")
-            if err.errno == errorcode.ER_BAD_DB_ERROR:
-                print("DEBUG: Database not found, attempting to create...")
-                try:
-                    # Juga gunakan use_pure di sini!
-                    temp_db = mysql.connector.connect(
-                        host="localhost", 
-                        user="root", 
-                        password="",
-                        use_pure=True,
-                        connection_timeout=5
-                    )
-                    cursor = temp_db.cursor()
-                    cursor.execute("CREATE DATABASE ollama_assistant")
-                    temp_db.close()
-                    print("DEBUG: Database created successfully, reconnecting...")
-                    self.db = mysql.connector.connect(
-                        host="localhost", 
-                        user="root", 
-                        password="", 
-                        database="ollama_assistant",
-                        use_pure=True,
-                        connection_timeout=5
-                    )
-                except Exception as e:
-                    print(f"DEBUG: Crash during DB creation: {e}")
-                    self.db = None
-                    return
-            else:
-                print(f"Error Database: {err}")
-                self.db = None
-                return
-        except Exception as e:
-            print(f"DEBUG: Unexpected crash in init_db: {e}")
-            self.db = None
-            return
-                
+        self.db = get_db_connection()
         if self.db:
-            print("DEBUG: Creating tables if not exist...")
-            try:
-                cursor = self.db.cursor()
-                cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS tasks (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        title VARCHAR(255) NOT NULL,
-                        status ENUM('pending', 'completed') DEFAULT 'pending',
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        deadline DATE NULL
-                    )
-                """)
-                self.db.commit()
-                print("DEBUG: Database initialization complete.")
-            except Exception as e:
-                print(f"DEBUG: Error creating tables: {e}")
+            init_db(self.db)
+            print("DEBUG: Database initialization complete.")
         else:
             print("DEBUG: self.db is None, skipping table creation.")
 
@@ -305,7 +224,7 @@ class OllamaAIApp(QMainWindow):
         self.model_box = QComboBox()
         self.model_box.setObjectName("ModelSelect")
         self.model_box.setMinimumWidth(150)
-        self.model_box.addItems(self.get_models())
+        self.model_box.addItems(get_models())
         hc_layout.addWidget(self.model_box)
         
         c_layout.addWidget(header_chat)
@@ -598,16 +517,7 @@ class OllamaAIApp(QMainWindow):
         except: pass
 
     def tm_load_data(self, filter_date=None):
-        self.check_db_schema()
-        if not self.db: return
-        cursor = self.db.cursor(dictionary=True)
-        
-        if filter_date:
-            cursor.execute("SELECT * FROM tasks WHERE deadline = %s ORDER BY created_at DESC", (filter_date,))
-        else:
-            cursor.execute("SELECT * FROM tasks ORDER BY created_at DESC")
-             
-        tasks = cursor.fetchall()
+        tasks = load_tasks_from_db(self.db, filter_date)
         
         self.tm_table.setRowCount(0)
         for i, task in enumerate(tasks):
@@ -637,14 +547,10 @@ class OllamaAIApp(QMainWindow):
             QMessageBox.warning(self, "Database Error", "Cannot add task: Not connected to MySQL. Please make sure XAMPP / MySQL server is running on localhost with user 'root' and empty password.")
             return
             
-        # ambil tanggal dari kalendar untuk input
         deadline = self.calendar.selectedDate().toString("yyyy-MM-dd")
-        
-        cursor = self.db.cursor()
-        cursor.execute("INSERT INTO tasks (title, deadline) VALUES (%s, %s)", (title, deadline))
-        self.db.commit()
-        self.tm_input.clear()
-        self.tm_load_data()
+        if add_task_to_db(self.db, title, deadline):
+            self.tm_input.clear()
+            self.tm_load_data()
 
     def tm_delete_task(self):
         current_row = self.tm_table.currentRow()
@@ -654,27 +560,16 @@ class OllamaAIApp(QMainWindow):
         reply = QMessageBox.question(self, 'Delete Task', 'Are you sure you want to delete this task?',
                                      QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.Yes:
-            cursor = self.db.cursor()
-            cursor.execute("DELETE FROM tasks WHERE id = %s", (task_id,))
-            self.db.commit()
-            self.tm_load_data()
+            if delete_task_from_db(self.db, task_id):
+                self.tm_load_data()
 
     def tm_complete_task(self):
         current_row = self.tm_table.currentRow()
         if current_row < 0 or not self.db: return
         task_id = self.tm_table.item(current_row, 0).text()
         
-        cursor = self.db.cursor()
-        cursor.execute("UPDATE tasks SET status = 'completed' WHERE id = %s", (task_id,))
-        self.db.commit()
-        self.tm_load_data()
-        self.load_tasks()
-
-    def delete_task(self, task_id):
-        if not self.db: return
-        cursor = self.db.cursor()
-        cursor.execute("DELETE FROM tasks WHERE id = %s", (task_id,))
-        self.db.commit()
+        if complete_task_in_db(self.db, task_id):
+            self.tm_load_data()
 
     def add_sidebar_button(self, session_id, name):
         # Format sesuai referensi gambar (Title tebal, deskripsi kecil, pin icon)
@@ -811,8 +706,9 @@ class OllamaAIApp(QMainWindow):
         # Prepare images for worker
         base64_images = []
         if img_path:
-            with open(img_path, "rb") as image_file:
-                base64_images.append(base64.b64encode(image_file.read()).decode('utf-8'))
+            encoded = encode_image(img_path)
+            if encoded:
+                base64_images.append(encoded)
         
         self.loading_anim.show()
         

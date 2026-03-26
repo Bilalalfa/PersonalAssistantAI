@@ -1,6 +1,6 @@
 # Ollama Vision - Personal Assistant AI 🤖📸
 
-**Ollama Vision** adalah aplikasi asisten pribadi modern yang menggabungkan kekuatan *Large Language Model* (LLM) dari Ollama dengan kemampuan *Computer Vision*. Aplikasi ini dibangun menggunakan Python dan PyQt6 untuk antarmuka pengguna yang responsif dan estetis, serta terintegrasi dengan MySQL untuk manajemen tugas.
+**Ollama Vision** adalah aplikasi asisten pribadi modern yang menggabungkan kekuatan *Large Language Model* (LLM) dari Ollama dengan kemampuan *Computer Vision*. Aplikasi ini dibangun menggunakan Python dan PyQt6 dengan arsitektur modular untuk memisahkan antarmuka (UI), integrasi AI, dan manajemen database, memberikan performa yang responsif dan estetis.
 
 ---
 
@@ -55,7 +55,9 @@ python app.py
 
 ```text
 PersonalAssistantAI/
-├── app.py              # Logika utama aplikasi & antarmuka PyQt6
+├── app.py              # Entry point utama & antarmuka PyQt6 (UI)
+├── ai_engine.py        # Integrasi AI (ChatWorker, Model management, Vision)
+├── db_handler.py       # Manajemen database (Koneksi, Task CRUD)
 ├── style.py           # Konfigurasi CSS/QSS dan tema warna
 ├── requirements.txt   # Daftar dependensi library
 └── README.md          # Dokumentasi proyek
