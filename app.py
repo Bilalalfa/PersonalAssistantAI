@@ -39,8 +39,8 @@ class ChatWorker(QThread):
 class LoadingAnimation(QLabel):
     def __init__(self):
         super().__init__()
+        self.setObjectName("LoadingAnim")
         self.setText("Bot is typing...")
-        self.setStyleSheet("color: #a855f7; font-style: italic; font-size: 13px; margin-left: 55px; margin-top: 5px; margin-bottom: 5px;")
         self.hide()
 
 class ProfileSetupDialog(QDialog):
@@ -64,34 +64,19 @@ class ProfileSetupDialog(QDialog):
         # Name Input
         self.input_name = QLineEdit()
         self.input_name.setPlaceholderText("Enter your name...")
-        self.input_name.setStyleSheet("""
-            QLineEdit { background-color: #25252b; border: 1px solid #3f3f46; border-radius: 10px; padding: 15px; font-size: 16px; color: white; }
-        """)
         layout.addWidget(QLabel("<b style='color:#e1e1e6; font-size: 16px;'>Name:</b>"))
         layout.addWidget(self.input_name)
         
         # Role Input
         self.input_role = QLineEdit()
         self.input_role.setPlaceholderText("Enter your role/profession...")
-        self.input_role.setStyleSheet("""
-            QLineEdit { background-color: #25252b; border: 1px solid #3f3f46; border-radius: 10px; padding: 15px; font-size: 16px; color: white; }
-        """)
         layout.addWidget(QLabel("<b style='color:#e1e1e6; font-size: 16px;'>Role:</b>"))
         layout.addWidget(self.input_role)
         
         # Start Button
         btn_start = QPushButton("Start Chatting")
+        btn_start.setObjectName("PrimaryBtn")
         btn_start.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_start.setStyleSheet("""
-            QPushButton {
-                background-color: #a855f7;
-                color: white;
-                border-radius: 12px;
-                padding: 15px;
-                font-weight: bold;
-                font-size: 16px;
-            }
-        """)
         btn_start.clicked.connect(self.accept_data)
         layout.addWidget(btn_start)
         layout.addStretch()
@@ -213,18 +198,15 @@ class OllamaAIApp(QMainWindow):
         self.sidebar = QFrame()
         self.sidebar.setObjectName("Sidebar")
         self.sidebar.setFixedWidth(260)
-        self.sidebar.setStyleSheet("background-color: #1a1a1f; border-right: 1px solid #2d2d35;")
         self.s_layout = QVBoxLayout(self.sidebar)
-        self.s_layout.setContentsMargins(15, 20, 15, 15)
+        self.s_layout.setContentsMargins(16, 24, 16, 24)
+        self.s_layout.setSpacing(8)
 
         # 1. Top Section: Hamburger & New Chat (Vertical Gemini Style)
         self.btn_toggle = QPushButton("≡")
+        self.btn_toggle.setObjectName("IconButton")
         self.btn_toggle.setFixedSize(40, 40)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_toggle.setStyleSheet("""
-            QPushButton { font-size: 24px; color: #9494b8; background: transparent; border: none; }
-            QPushButton:hover { background-color: #2d2d35; border-radius: 20px; }
-        """)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
         self.s_layout.addWidget(self.btn_toggle)
         
@@ -232,22 +214,9 @@ class OllamaAIApp(QMainWindow):
 
         # New Chat Button (Pill Style)
         self.btn_new_chat = QPushButton("  ✎   New chat")
+        self.btn_new_chat.setObjectName("NewChatBtn")
         self.btn_new_chat.setFixedSize(140, 40)
         self.btn_new_chat.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_new_chat.setStyleSheet("""
-            QPushButton {
-                text-align: left;
-                background-color: transparent;
-                color: #e1e1e6;
-                border-radius: 20px;
-                padding-left: 5px;
-                font-size: 14px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #2d2d35;
-            }
-        """)
         self.btn_new_chat.clicked.connect(self.reset_chat)
         self.s_layout.addWidget(self.btn_new_chat)
         
@@ -258,10 +227,6 @@ class OllamaAIApp(QMainWindow):
         self.s_layout.addWidget(self.lbl_quick_find)
         
         self.btn_task_mgr = QPushButton(" 📦   Task Manager")
-        self.btn_task_mgr.setStyleSheet("""
-            QPushButton { text-align: left; background-color: transparent; color: #e1e1e6; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
-            QPushButton:hover { background-color: #25252b; }
-        """)
         self.btn_task_mgr.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_task_mgr.clicked.connect(self.show_task_manager)
         self.s_layout.addWidget(self.btn_task_mgr)
@@ -288,10 +253,7 @@ class OllamaAIApp(QMainWindow):
         self.s_layout.addStretch()
         
         self.btn_settings = QPushButton(" ⚙    Settings")
-        self.btn_settings.setStyleSheet("""
-            QPushButton { text-align: left; background-color: transparent; color: #71717a; padding: 10px; border-radius: 8px; font-size: 13px; }
-            QPushButton:hover { background-color: #25252b; color: white; }
-        """)
+        self.btn_settings.setObjectName("SubText") # Reuse color if needed or just let default
         self.s_layout.addWidget(self.btn_settings)
 
         line = QFrame()
@@ -301,10 +263,10 @@ class OllamaAIApp(QMainWindow):
         
         self.profile_widget = QWidget()
         p_layout = QHBoxLayout(self.profile_widget)
-        p_layout.setContentsMargins(0, 10, 0, 0)
+        p_layout.setContentsMargins(0, 16, 0, 0)
         
         lbl_avatar = QLabel("👩🏽")
-        lbl_avatar.setStyleSheet("font-size: 20px; background: #3f3f46; border-radius: 15px; padding: 2px;")
+        lbl_avatar.setObjectName("AIAvatar") # Reusing AIAvatar style or similar
         lbl_avatar.setFixedSize(30, 30)
         lbl_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -331,7 +293,7 @@ class OllamaAIApp(QMainWindow):
         
         # Header Chat (Model Selector)
         header_chat = QFrame()
-        header_chat.setStyleSheet("background-color: #1a1a1f; border-bottom: 1px solid #2d2d35;")
+        header_chat.setObjectName("HeaderChat")
         hc_layout = QHBoxLayout(header_chat)
         hc_layout.setContentsMargins(20, 15, 20, 15)
         
@@ -366,17 +328,7 @@ class OllamaAIApp(QMainWindow):
         def create_card(icon, title, desc):
             frame = QFrame()
             frame.setFixedSize(190, 130)
-            frame.setStyleSheet("""
-                QFrame {
-                    background-color: #1c1c21;
-                    border: 1px solid #2d2d35;
-                    border-radius: 12px;
-                }
-                QFrame:hover {
-                    background-color: #25252b;
-                    border: 1px solid #5b21b6;
-                }
-            """)
+            frame.setObjectName("Card")
             card_layout = QVBoxLayout(frame)
             card_layout.setContentsMargins(15, 15, 15, 15)
             card_layout.setSpacing(5)
@@ -464,20 +416,20 @@ class OllamaAIApp(QMainWindow):
         tm_controls.addWidget(self.tm_input)
         
         btn_tm_add = QPushButton("Add Task")
+        btn_tm_add.setObjectName("PrimaryBtn")
         btn_tm_add.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_tm_add.setStyleSheet("background-color: #a855f7; color: white; border-radius: 8px; padding: 12px 20px; font-weight: bold;")
         btn_tm_add.clicked.connect(self.tm_add_task)
         tm_controls.addWidget(btn_tm_add)
         
         btn_tm_complete = QPushButton("Mark Completed")
+        btn_tm_complete.setObjectName("SuccessBtn")
         btn_tm_complete.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_tm_complete.setStyleSheet("background-color: #10b981; color: white; border-radius: 8px; padding: 12px 20px; font-weight: bold;")
         btn_tm_complete.clicked.connect(self.tm_complete_task)
         tm_controls.addWidget(btn_tm_complete)
         
         btn_tm_del = QPushButton("Delete Selected")
+        btn_tm_del.setObjectName("DangerBtn")
         btn_tm_del.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_tm_del.setStyleSheet("background-color: #ef4444; color: white; border-radius: 8px; padding: 12px 20px; font-weight: bold;")
         btn_tm_del.clicked.connect(self.tm_delete_task)
         tm_controls.addWidget(btn_tm_del)
         
@@ -492,11 +444,6 @@ class OllamaAIApp(QMainWindow):
         self.tm_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.tm_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.tm_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        self.tm_table.setStyleSheet("""
-            QTableWidget { background-color: #1c1c21; color: white; border: 1px solid #2d2d35; border-radius: 8px; gridline-color: #2d2d35; }
-            QHeaderView::section { background-color: #25252b; color: #9494b8; padding: 10px; border: none; font-weight: bold; text-align: left; }
-            QTableView::item { border-bottom: 1px solid #2d2d35; padding: 5px; }
-        """)
         self.tm_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tm_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tm_table.verticalHeader().setVisible(False)
@@ -509,7 +456,6 @@ class OllamaAIApp(QMainWindow):
         tm_right_sidebar = QFrame()
         tm_right_sidebar.setObjectName("RightSidebar")
         tm_right_sidebar.setFixedWidth(280)
-        tm_right_sidebar.setStyleSheet("background-color: #1a1a1f; border-left: 1px solid #2d2d35;")
         rs_layout = QVBoxLayout(tm_right_sidebar)
         rs_layout.setContentsMargins(15, 20, 15, 15)
         
@@ -523,14 +469,6 @@ class OllamaAIApp(QMainWindow):
         
         self.calendar = QCalendarWidget()
         self.calendar.setGridVisible(True)
-        self.calendar.setStyleSheet("""
-            QCalendarWidget QWidget { alternate-background-color: #25252b; }
-            QCalendarWidget QToolButton { color: white; background-color: transparent; }
-            QCalendarWidget QMenu { background-color: #25252b; color: white; }
-            QCalendarWidget QSpinBox { background-color: #25252b; color: white; }
-            QCalendarWidget QAbstractItemView:enabled { background-color: #1c1c21; color: white; selection-background-color: #a855f7; selection-color: white; }
-            QCalendarWidget QAbstractItemView:disabled { color: #52525b; }
-        """)
         self.calendar.selectionChanged.connect(self.filter_tasks_by_date)
         rs_layout.addWidget(self.calendar)
         
@@ -578,9 +516,9 @@ class OllamaAIApp(QMainWindow):
         
         # Upload Image Button
         self.btn_upload = QPushButton("🖼️")
+        self.btn_upload.setObjectName("IconButton")
         self.btn_upload.setFixedSize(40, 40)
         self.btn_upload.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_upload.setStyleSheet("font-size: 18px; color: #9494b8; background: transparent; border: none;")
         self.btn_upload.clicked.connect(self.open_image)
         input_h.addWidget(self.btn_upload)
 
@@ -590,8 +528,9 @@ class OllamaAIApp(QMainWindow):
         self.input_field.returnPressed.connect(self.handle_send)
         
         send_btn = QPushButton("🚀")
-        send_btn.setFixedSize(40, 40)
-        send_btn.setStyleSheet(f"background-color: {COLOR_ACCENT}; border-radius: 20px; color: white;")
+        send_btn.setObjectName("PrimaryBtn")
+        send_btn.setFixedSize(44, 44)
+        send_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         send_btn.clicked.connect(self.handle_send)
 
         input_h.addWidget(self.input_field)
@@ -761,17 +700,8 @@ class OllamaAIApp(QMainWindow):
         btn_layout.addLayout(top_layout)
         btn_layout.addWidget(lbl_desc)
         
-        btn.setStyleSheet("""
-            QPushButton {
-                text-align: left; 
-                background-color: transparent;
-                border-radius: 8px;
-            }
-            QPushButton:hover {
-                background-color: #25252b;
-            }
-        """)
         btn.setFixedHeight(55)
+        btn.setObjectName("NewChatBtn")
         btn.clicked.connect(lambda checked, sid=session_id: self.load_chat(sid))
         self.chat_layout.insertWidget(0, btn)
 
@@ -795,21 +725,10 @@ class OllamaAIApp(QMainWindow):
         # We'll pass an optional 'image_path' to create_chat_bubble if needed
         
         if is_user:
-            bubble_frame.setStyleSheet("""
-                QFrame {
-                    background-color: #b538b0;
-                    border-radius: 18px;
-                }
-                QLabel {
-                    color: #ffffff;
-                    font-size: 14px;
-                    line-height: 1.4;
-                    background-color: transparent;
-                }
-            """)
+            bubble_frame.setObjectName("UserBubble")
             
             avatar = QLabel("👱🏻‍♀️")
-            avatar.setStyleSheet("font-size: 24px; background-color: transparent;")
+            avatar.setObjectName("UserAvatar")
             avatar.setFixedSize(36, 36)
             avatar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             
@@ -819,21 +738,10 @@ class OllamaAIApp(QMainWindow):
             layout.setAlignment(bubble_frame, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
             layout.setAlignment(avatar, Qt.AlignmentFlag.AlignTop)
         else:
-            bubble_frame.setStyleSheet("""
-                QFrame {
-                    background-color: #202020;
-                    border-radius: 18px;
-                }
-                QLabel {
-                    color: #e1e1e6;
-                    font-size: 14px;
-                    line-height: 1.4;
-                    background-color: transparent;
-                }
-            """)
+            bubble_frame.setObjectName("AIBubble")
             
             avatar = QLabel("✨")
-            avatar.setStyleSheet("font-size: 20px; background-color: #111; border-radius: 12px; padding: 5px;")
+            avatar.setObjectName("AIAvatar")
             avatar.setFixedSize(36, 36)
             avatar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
             
@@ -859,7 +767,7 @@ class OllamaAIApp(QMainWindow):
                 flayout = frame.layout()
                 img_lbl = QLabel()
                 img_lbl.setPixmap(QPixmap(image_path).scaled(400, 300, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-                img_lbl.setStyleSheet("border-radius: 10px; margin-bottom: 10px;")
+                img_lbl.setContentsMargins(0, 0, 0, 10)
                 flayout.insertWidget(0, img_lbl)
 
         if save:
