@@ -55,12 +55,16 @@ python app.py
 
 ```text
 PersonalAssistantAI/
-├── app.py              # Entry point utama & antarmuka PyQt6 (UI)
-├── ai_engine.py        # Integrasi AI (ChatWorker, Model management, Vision)
-├── db_handler.py       # Manajemen database (Koneksi, Task CRUD)
-├── style.py           # Konfigurasi CSS/QSS dan tema warna
-├── requirements.txt   # Daftar dependensi library
-└── README.md          # Dokumentasi proyek
+├── app.py                      # Entry point utama & Controller (Integrasi)
+├── UI/
+│   ├── ui_components.py          # Definisi antarmuka PyQt6 & Komponen
+│   └── style.py                  # Konfigurasi CSS/QSS dan tema warna
+├── ai_integration/
+│   └── ai_engine.py              # Integrasi AI (ChatWorker, Vision)
+├── Database/
+│   └── db_handler.py             # Manajemen database (Koneksi, Task CRUD)
+├── requirements.txt            # Daftar dependensi library
+└── README.md                   # Dokumentasi proyek
 ```
 
 ---
