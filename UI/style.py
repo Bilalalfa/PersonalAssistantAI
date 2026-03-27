@@ -1,12 +1,12 @@
-# --- KONFIGURASI WARNA & STYLE ---
-COLOR_MAIN_BG = "#131316"      # Background gelap pekat
-COLOR_SIDEBAR = "#1c1c21"      # Sidebar sedikit lebih terang
-COLOR_BUBBLE_USER = "#a855f7"   # Ungu terang untuk User
-COLOR_BUBBLE_AI = "#25252b"     # Gelap untuk AI
-COLOR_ACCENT = "#a855f7"       # Ungu terang (Tombol & Icon)
-COLOR_TEXT = "#e1e1e6"         # Teks terang
-COLOR_SUBTEXT = "#9494b8"      # Teks redup
-COLOR_BORDER = "#2d2d35"       # Warna border
+# --- KONFIGURASI Color & STYLE ---
+COLOR_MAIN_BG = "#131316"      
+COLOR_SIDEBAR = "#1c1c21"      
+COLOR_BUBBLE_USER = "#a855f7"   
+COLOR_BUBBLE_AI = "#25252b"     
+COLOR_ACCENT = "#a855f7"       
+COLOR_TEXT = "#e1e1e6"        
+COLOR_SUBTEXT = "#9494b8"      
+COLOR_BORDER = "#2d2d35"       
 
 STYLE_SHEET = f"""
     QMainWindow {{ 
