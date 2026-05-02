@@ -2,10 +2,22 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QFrame, QScrollArea, QLineEdit, QPushButton, 
                              QComboBox, QStackedWidget, QDialog, QTableWidget, 
                              QHeaderView, QCalendarWidget)
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QColor
+from PyQt6.QtCore import Qt, pyqtSignal, QSize, QPoint
+from PyQt6.QtGui import QPixmap, QColor, QFont, QIcon
 from UI.style import STYLE_SHEET, COLOR_ACCENT
 from ai_integration.ai_engine import get_models
+import qtawesome as qta
+
+
+class UpwardComboBox(QComboBox):
+    """ComboBox that opens its dropdown popup upward instead of downward."""
+    def showPopup(self):
+        super().showPopup()
+        popup = self.view().parent()
+        popup_height = popup.height()
+        # Move popup above the combobox
+        global_pos = self.mapToGlobal(QPoint(0, 0))
+        popup.move(global_pos.x(), global_pos.y() - popup_height)
 
 class LoadingAnimation(QLabel):
     def __init__(self):
@@ -96,43 +108,64 @@ class MainInterface(QMainWindow):
         self.sidebar.setObjectName("Sidebar")
         self.sidebar.setFixedWidth(260)
         self.s_layout = QVBoxLayout(self.sidebar)
-        self.s_layout.setContentsMargins(16, 24, 16, 24)
-        self.s_layout.setSpacing(8)
+        self.s_layout.setContentsMargins(14, 20, 14, 16)
+        self.s_layout.setSpacing(4)
 
-        # Toggle Button
-        self.btn_toggle = QPushButton("≡")
-        self.btn_toggle.setObjectName("IconButton")
+        # Top Row: Hamburger + Brand Title
+        top_row = QHBoxLayout()
+        top_row.setContentsMargins(0, 0, 0, 0)
+        top_row.setSpacing(8)
+
+        self.btn_toggle = QPushButton()
+        self.btn_toggle.setIcon(qta.icon('fa5s.bars', color='#9494b8'))
+        self.btn_toggle.setIconSize(QSize(18, 18))
+        self.btn_toggle.setObjectName("SidebarIconBtn")
         self.btn_toggle.setFixedSize(40, 40)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar_internal)
-        self.s_layout.addWidget(self.btn_toggle)
-        
-        self.s_layout.addSpacing(15)
+        top_row.addWidget(self.btn_toggle)
+
+        self.lbl_brand = QLabel("<b style='color: #ececee; font-size: 16px;'>Ollama Vision</b>")
+        top_row.addWidget(self.lbl_brand)
+        top_row.addStretch()
+
+        self.s_layout.addLayout(top_row)
+        self.s_layout.addSpacing(12)
 
         # New Chat Button
-        self.btn_new_chat = QPushButton("  ✎   New chat")
+        self.btn_new_chat = QPushButton("  New Chat")
+        self.btn_new_chat.setIcon(qta.icon('fa5s.plus', color='#e1e1e6'))
+        self.btn_new_chat.setIconSize(QSize(14, 14))
         self.btn_new_chat.setObjectName("NewChatBtn")
-        self.btn_new_chat.setFixedSize(140, 40)
+        self.btn_new_chat.setFixedHeight(42)
         self.btn_new_chat.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_new_chat.clicked.connect(lambda: self.new_chat_signal.emit())
         self.s_layout.addWidget(self.btn_new_chat)
         
-        self.s_layout.addSpacing(20)
+        self.s_layout.addSpacing(16)
 
-        # Quick Find & Folders
-        self.lbl_quick_find = QLabel("<b style='color:#71717a; font-size: 11px; letter-spacing: 1px;'>QUICK FIND</b>")
+        # Section Label: Quick Find
+        self.lbl_quick_find = QLabel("<b style='color:#71717a; font-size: 10px; letter-spacing: 1.5px;'>QUICK FIND</b>")
         self.s_layout.addWidget(self.lbl_quick_find)
+        self.s_layout.addSpacing(4)
         
-        self.btn_task_mgr = QPushButton(" 📦   Task Manager")
+        # Task Manager Button
+        self.btn_task_mgr = QPushButton("  Task Manager")
+        self.btn_task_mgr.setIcon(qta.icon('fa5s.tasks', color='#a855f7'))
+        self.btn_task_mgr.setIconSize(QSize(16, 16))
+        self.btn_task_mgr.setObjectName("SidebarNavBtn")
         self.btn_task_mgr.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_task_mgr.clicked.connect(lambda: self.show_task_mgr_signal.emit())
         self.s_layout.addWidget(self.btn_task_mgr)
         
-        self.s_layout.addSpacing(20)
-        self.lbl_folder = QLabel("<b style='color:#71717a; font-size: 11px; letter-spacing: 1px;'>FOLDER</b>")
+        self.s_layout.addSpacing(16)
+
+        # Section Label: Chat History
+        self.lbl_folder = QLabel("<b style='color:#71717a; font-size: 10px; letter-spacing: 1.5px;'>CHAT HISTORY</b>")
         self.s_layout.addWidget(self.lbl_folder)
+        self.s_layout.addSpacing(4)
         
-        # Scroll Area History
+        # Scroll Area for Chat History
         self.hist_scroll = QScrollArea()
         self.hist_scroll.setWidgetResizable(True)
         self.hist_scroll.setStyleSheet("background-color: transparent; border: none;")
@@ -140,7 +173,7 @@ class MainInterface(QMainWindow):
         hist_container = QWidget()
         self.chat_layout = QVBoxLayout(hist_container)
         self.chat_layout.setContentsMargins(0, 0, 0, 0)
-        self.chat_layout.setSpacing(2)
+        self.chat_layout.setSpacing(3)
         self.chat_layout.addStretch()
         
         self.hist_scroll.setWidget(hist_container)
@@ -148,12 +181,11 @@ class MainInterface(QMainWindow):
         
         # Bottom Section
         self.s_layout.addStretch()
-        self.btn_settings = QPushButton(" ⚙    Settings")
-        self.s_layout.addWidget(self.btn_settings)
 
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
-        line.setStyleSheet("background-color: #2d2d35;")
+        line.setFixedHeight(1)
+        line.setStyleSheet("background-color: #2d2d35; border: none;")
         self.s_layout.addWidget(line)
         
         self.setup_profile_footer()
@@ -185,17 +217,19 @@ class MainInterface(QMainWindow):
     def setup_profile_footer(self):
         self.profile_widget = QWidget()
         p_layout = QHBoxLayout(self.profile_widget)
-        p_layout.setContentsMargins(0, 16, 0, 0)
+        p_layout.setContentsMargins(4, 12, 4, 0)
         
-        lbl_avatar = QLabel("👩🏽")
-        lbl_avatar.setObjectName("AIAvatar")
-        lbl_avatar.setFixedSize(30, 30)
+        # Avatar with icon instead of emoji
+        lbl_avatar = QLabel()
+        lbl_avatar.setPixmap(qta.icon('fa5s.user-circle', color='#a855f7').pixmap(QSize(28, 28)))
+        lbl_avatar.setFixedSize(32, 32)
         lbl_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_avatar.setObjectName("ProfileAvatar")
         
         self.profile_info = QWidget()
         pi_inner = QVBoxLayout(self.profile_info)
         pi_inner.setSpacing(0)
-        pi_inner.setContentsMargins(5, 0, 0, 0)
+        pi_inner.setContentsMargins(8, 0, 0, 0)
         lbl_name = QLabel(f"<b style='color: white; font-size: 12px;'>{self.user_name}</b>")
         lbl_role = QLabel(f"<span style='color: #71717a; font-size: 9px;'>{self.user_role}</span>")
         pi_inner.addWidget(lbl_name)
@@ -210,19 +244,8 @@ class MainInterface(QMainWindow):
         header_chat = QFrame()
         header_chat.setObjectName("HeaderChat")
         hc_layout = QHBoxLayout(header_chat)
-        hc_layout.setContentsMargins(20, 15, 20, 15)
+        hc_layout.setContentsMargins(20, 12, 20, 12)
         
-        self.lbl_header_title = QLabel("<b style='color: #ececee; font-size: 20px;'>Ollama Vision</b>")
-        hc_layout.addWidget(self.lbl_header_title)
-        hc_layout.addStretch()
-        hc_layout.addWidget(QLabel("<span style='color: #9494b8; font-size: 13px;'>Model:</span>"))
-        
-        self.model_box = QComboBox()
-        self.model_box.setObjectName("ModelSelect")
-        self.model_box.setMinimumWidth(150)
-        self.model_box.addItems(get_models())
-        hc_layout.addWidget(self.model_box)
-        layout.addWidget(header_chat)
 
     def setup_welcome_screen(self):
         self.welcome_widget = QWidget()
@@ -237,14 +260,16 @@ class MainInterface(QMainWindow):
         cards_layout = QHBoxLayout()
         cards_layout.setSpacing(15)
         
-        def create_card(icon, title, desc):
+        def create_card(icon_name, icon_color, title, desc):
             frame = QFrame()
             frame.setFixedSize(190, 130)
             frame.setObjectName("Card")
             card_layout = QVBoxLayout(frame)
             card_layout.setContentsMargins(15, 15, 15, 15)
             card_layout.setSpacing(5)
-            lbl_icon = QLabel(f"<span style='font-size: 20px;'>{icon}</span>")
+            lbl_icon = QLabel()
+            lbl_icon.setPixmap(qta.icon(icon_name, color=icon_color).pixmap(QSize(24, 24)))
+            lbl_icon.setFixedSize(30, 30)
             lbl_title = QLabel(f"<b style='color: white; font-size: 14px;'>{title}</b>")
             lbl_desc = QLabel(f"<span style='color: #9494b8; font-size: 12px;'>{desc}</span>")
             lbl_desc.setWordWrap(True)
@@ -255,10 +280,10 @@ class MainInterface(QMainWindow):
             frame.mousePressEvent = lambda event, t=title: self.input_field.setText(f"Can you help me with {t}?")
             return frame
             
-        cards_layout.addWidget(create_card("📝", "Test Cases", "Generate test scenarios."))
-        cards_layout.addWidget(create_card("🤖", "Automation", "Selenium/Cypress scripts."))
-        cards_layout.addWidget(create_card("🐛", "Debugging", "Analyze logs & API errors."))
-        cards_layout.addWidget(create_card("📚", "Docs", "Generate QA documentation."))
+        cards_layout.addWidget(create_card("fa5s.clipboard-list", "#60a5fa", "Test Cases", "Generate test scenarios."))
+        cards_layout.addWidget(create_card("fa5s.robot", "#a855f7", "Automation", "Selenium/Cypress scripts."))
+        cards_layout.addWidget(create_card("fa5s.bug", "#f87171", "Debugging", "Analyze logs & API errors."))
+        cards_layout.addWidget(create_card("fa5s.book", "#34d399", "Docs", "Generate QA documentation."))
         
         cards_container = QWidget()
         cards_container.setLayout(cards_layout)
@@ -363,7 +388,7 @@ class MainInterface(QMainWindow):
         self.preview_img.setScaledContents(True)
         btn_remove = QPushButton("✕")
         btn_remove.setFixedSize(20, 20)
-        btn_remove.setStyleSheet("background-color: #ef4444; color: white; border-radius: 10px;")
+        btn_remove.setStyleSheet("background-color: #202020; color: white; border-radius: 10px;")
         btn_remove.clicked.connect(self.clear_image)
         pv_layout.addWidget(self.preview_img)
         pv_layout.addWidget(btn_remove)
@@ -374,8 +399,11 @@ class MainInterface(QMainWindow):
         self.input_container.setObjectName("InputContainer")
         input_h = QHBoxLayout(self.input_container)
         
-        btn_up = QPushButton("🖼️")
+        btn_up = QPushButton()
+        btn_up.setIcon(qta.icon('fa5s.image', color='#9494b8'))
+        btn_up.setIconSize(QSize(20, 20))
         btn_up.setObjectName("IconButton")
+        btn_up.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_up.clicked.connect(self.open_image)
         input_h.addWidget(btn_up)
 
@@ -384,10 +412,22 @@ class MainInterface(QMainWindow):
         self.input_field.setPlaceholderText("Ask or search anything...")
         self.input_field.returnPressed.connect(self.emit_send_signal)
         input_h.addWidget(self.input_field)
+
+        # Model Selector (inline with input, opens upward)
+        self.model_box = UpwardComboBox()
+        self.model_box.setObjectName("ModelSelect")
+        self.model_box.setFixedWidth(140)
+        self.model_box.setFixedHeight(36)
+        self.model_box.addItems(get_models())
+        self.model_box.setCursor(Qt.CursorShape.PointingHandCursor)
+        input_h.addWidget(self.model_box)
         
-        btn_send = QPushButton("🚀")
+        btn_send = QPushButton()
+        btn_send.setIcon(qta.icon('fa5s.paper-plane', color='white'))
+        btn_send.setIconSize(QSize(18, 18))
         btn_send.setObjectName("PrimaryBtn")
         btn_send.setFixedSize(44, 44)
+        btn_send.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_send.clicked.connect(self.emit_send_signal)
         input_h.addWidget(btn_send)
         layout.addWidget(self.input_container)
@@ -395,15 +435,17 @@ class MainInterface(QMainWindow):
     def toggle_sidebar_internal(self):
         is_collapsed = self.sidebar.width() < 100
         if not is_collapsed:
-            self.sidebar.setFixedWidth(80)
-            self.btn_new_chat.setText("  ✎")
-            self.btn_new_chat.setFixedWidth(40)
+            self.sidebar.setFixedWidth(60)
+            self.btn_new_chat.setText("")
+            self.btn_new_chat.setIcon(qta.icon('fa5s.plus', color='#e1e1e6'))
+            self.lbl_brand.hide()
             for w in [self.lbl_quick_find, self.btn_task_mgr, self.lbl_folder, self.hist_scroll, self.btn_settings, self.profile_info]:
                 w.hide()
         else:
             self.sidebar.setFixedWidth(260)
-            self.btn_new_chat.setText("  ✎   New chat")
-            self.btn_new_chat.setFixedWidth(140)
+            self.btn_new_chat.setText("  New Chat")
+            self.btn_new_chat.setIcon(qta.icon('fa5s.plus', color='#e1e1e6'))
+            self.lbl_brand.show()
             for w in [self.lbl_quick_find, self.btn_task_mgr, self.lbl_folder, self.hist_scroll, self.btn_settings, self.profile_info]:
                 w.show()
 
@@ -441,17 +483,12 @@ class MainInterface(QMainWindow):
             self.delete_task_signal.emit(tid)
 
     def add_sidebar_button(self, session_id, name):
-        btn = QPushButton()
-        btn_layout = QVBoxLayout(btn)
-        top_layout = QHBoxLayout()
-        lbl_title = QLabel(f"<b style='color: #e1e1e6; font-size: 13px;'>{name}</b>")
-        top_layout.addWidget(lbl_title)
-        top_layout.addStretch()
-        top_layout.addWidget(QLabel("<span style='color: #52525b; font-size: 12px;'>📌</span>"))
-        btn_layout.addLayout(top_layout)
-        btn_layout.addWidget(QLabel("<span style='color: #71717a; font-size: 11px;'>Chat session...</span>"))
-        btn.setFixedHeight(55)
-        btn.setObjectName("NewChatBtn")
+        btn = QPushButton(f"  {name}")
+        btn.setIcon(qta.icon('fa5s.comment-dots', color='#71717a'))
+        btn.setIconSize(QSize(14, 14))
+        btn.setFixedHeight(40)
+        btn.setObjectName("ChatHistoryBtn")
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
         btn.clicked.connect(lambda: self.chat_session_selected_signal.emit(session_id))
         self.chat_layout.insertWidget(0, btn)
 
@@ -471,9 +508,14 @@ class MainInterface(QMainWindow):
         bubble_label.setMaximumWidth(600)
         bubble_layout.addWidget(bubble_label)
         
-        avatar = QLabel("👱🏻‍♀️" if is_user else "✨")
+        avatar = QLabel()
+        if is_user:
+            avatar.setPixmap(qta.icon('fa5s.user', color='#a855f7').pixmap(QSize(20, 20)))
+        else:
+            avatar.setPixmap(qta.icon('fa5s.robot', color='#10b981').pixmap(QSize(20, 20)))
         avatar.setObjectName("UserAvatar" if is_user else "AIAvatar")
         avatar.setFixedSize(36, 36)
+        avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         if is_user:
             bubble_frame.setObjectName("UserBubble")

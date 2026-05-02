@@ -73,6 +73,34 @@ STYLE_SHEET = f"""
         font-size: 15px;
     }}
 
+    /* Model Selector (inside input bar) */
+    #ModelSelect {{
+        background-color: #1c1c21;
+        color: {COLOR_SUBTEXT};
+        border: 1px solid #3f3f46;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 500;
+    }}
+    #ModelSelect:hover {{
+        border-color: {COLOR_ACCENT};
+        color: {COLOR_TEXT};
+    }}
+    #ModelSelect::drop-down {{
+        border: none;
+        padding-right: 8px;
+    }}
+    #ModelSelect QAbstractItemView {{
+        background-color: #25252b;
+        color: {COLOR_TEXT};
+        border: 1px solid #3f3f46;
+        border-radius: 8px;
+        selection-background-color: {COLOR_ACCENT};
+        selection-color: white;
+        padding: 4px;
+    }}
+
     /* Buttons */
     QPushButton {{
         border: none;
@@ -93,17 +121,70 @@ STYLE_SHEET = f"""
         background-color: #9333ea;
     }}
 
+    /* New Chat Button */
     #NewChatBtn {{
         background-color: transparent;
         color: {COLOR_TEXT};
-        border-radius: 20px;
+        border: 1px solid {COLOR_BORDER};
+        border-radius: 10px;
         padding: 10px 15px;
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
         text-align: left;
     }}
     #NewChatBtn:hover {{
         background-color: #2d2d35;
+        border-color: {COLOR_ACCENT};
+    }}
+
+    /* Sidebar Icon-only Button (hamburger) */
+    #SidebarIconBtn {{
+        background-color: transparent;
+        border: none;
+        border-radius: 10px;
+        color: {COLOR_SUBTEXT};
+    }}
+    #SidebarIconBtn:hover {{
+        background-color: #2d2d35;
+    }}
+
+    /* Sidebar Navigation Buttons */
+    #SidebarNavBtn {{
+        background-color: transparent;
+        color: {COLOR_TEXT};
+        border: none;
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        text-align: left;
+    }}
+    #SidebarNavBtn:hover {{
+        background-color: #2d2d35;
+    }}
+
+    /* Chat History Buttons */
+    #ChatHistoryBtn {{
+        background-color: transparent;
+        color: #b0b0c0;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-weight: 400;
+        text-align: left;
+    }}
+    #ChatHistoryBtn:hover {{
+        background-color: #2d2d35;
+        color: white;
+    }}
+
+    /* Profile Avatar */
+    #ProfileAvatar {{
+        background-color: #25252b;
+        border-radius: 16px;
+        border: 1px solid {COLOR_BORDER};
+        padding: 2px;
     }}
 
     /* Table Widget */
