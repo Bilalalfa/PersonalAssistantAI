@@ -72,9 +72,11 @@ def load_tasks_from_db(db, filter_date=None):
     if not db: return []
     cursor = db.cursor(dictionary=True)
     if filter_date:
-        cursor.execute("SELECT * FROM tasks WHERE deadline = %s ORDER BY created_at DESC", (filter_date,))
+        # Ubah DESC menjadi ASC
+        cursor.execute("SELECT * FROM tasks WHERE deadline = %s ORDER BY created_at ASC", (filter_date,))
     else:
-        cursor.execute("SELECT * FROM tasks ORDER BY created_at DESC")
+        # Ubah DESC menjadi ASC
+        cursor.execute("SELECT * FROM tasks ORDER BY created_at ASC")
     return cursor.fetchall()
 
 def add_task_to_db(db, title, deadline):

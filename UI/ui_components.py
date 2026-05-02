@@ -356,6 +356,9 @@ class MainInterface(QMainWindow):
         self.tm_table = QTableWidget()
         self.tm_table.setColumnCount(5)
         self.tm_table.setHorizontalHeaderLabels(["ID", "Title", "Status", "Date Created", "Deadline"])
+
+        self.tm_table.setColumnHidden(0, True)
+
         self.tm_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.tm_table.setShowGrid(False)
         tm_layout.addWidget(self.tm_table)
