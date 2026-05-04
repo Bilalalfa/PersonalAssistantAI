@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QFrame, QScrollArea, QLineEdit, QPushButton, 
                              QComboBox, QStackedWidget, QDialog, QTableWidget, 
-                             QHeaderView, QCalendarWidget)
+                             QHeaderView, QCalendarWidget, QMenu, QFileDialog)
 from PyQt6.QtCore import Qt, pyqtSignal, QSize, QPoint
-from PyQt6.QtGui import QPixmap, QColor, QFont, QIcon
+from PyQt6.QtGui import QPixmap, QColor, QFont, QIcon, QAction
 from UI.style import STYLE_SHEET, COLOR_ACCENT
 from ai_integration.ai_engine import get_models
 import qtawesome as qta
@@ -94,6 +94,7 @@ class MainInterface(QMainWindow):
         self.setStyleSheet(STYLE_SHEET)
         
         self.selected_image_path = None
+        self.selected_file_type = None
         self.init_ui()
 
     def init_ui(self):
@@ -400,11 +401,43 @@ class MainInterface(QMainWindow):
         input_h = QHBoxLayout(self.input_container)
         
         btn_up = QPushButton()
-        btn_up.setIcon(qta.icon('fa5s.image', color='#9494b8'))
-        btn_up.setIconSize(QSize(20, 20))
+        btn_up.setIcon(qta.icon('fa5s.plus', color='#9494b8'))
+        btn_up.setIconSize(QSize(18, 18))
         btn_up.setObjectName("IconButton")
         btn_up.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_up.clicked.connect(self.open_image)
+        
+        # Menu for upload options
+        upload_menu = QMenu(self)
+        upload_menu.setStyleSheet("""
+            QMenu {
+                background-color: #25252b;
+                border: 1px solid #3f3f46;
+                border-radius: 8px;
+                padding: 4px;
+            }
+            QMenu::item {
+                padding: 8px 24px;
+                color: #e1e1e6;
+                border-radius: 4px;
+            }
+            QMenu::item:selected {
+                background-color: #a855f7;
+                color: white;
+            }
+        """)
+        
+        act_img = QAction(qta.icon('fa5s.image', color='#e1e1e6'), "Image", self)
+        act_img.triggered.connect(lambda: self.open_file("Image"))
+        
+        act_doc = QAction(qta.icon('fa5s.file-alt', color='#e1e1e6'), "Document", self)
+        act_doc.triggered.connect(lambda: self.open_file("Document"))
+        
+        upload_menu.addAction(act_img)
+        upload_menu.addAction(act_doc)
+        
+        # Connect to custom function to show menu upward
+        btn_up.clicked.connect(lambda: self.show_upward_menu(btn_up, upload_menu))
+        
         input_h.addWidget(btn_up)
 
         self.input_field = QLineEdit()
@@ -439,27 +472,48 @@ class MainInterface(QMainWindow):
             self.btn_new_chat.setText("")
             self.btn_new_chat.setIcon(qta.icon('fa5s.plus', color='#e1e1e6'))
             self.lbl_brand.hide()
-            for w in [self.lbl_quick_find, self.btn_task_mgr, self.lbl_folder, self.hist_scroll, self.btn_settings, self.profile_info]:
+            for w in [self.lbl_quick_find, self.btn_task_mgr, self.lbl_folder, self.hist_scroll, self.profile_info]:
                 w.hide()
         else:
             self.sidebar.setFixedWidth(260)
             self.btn_new_chat.setText("  New Chat")
             self.btn_new_chat.setIcon(qta.icon('fa5s.plus', color='#e1e1e6'))
             self.lbl_brand.show()
-            for w in [self.lbl_quick_find, self.btn_task_mgr, self.lbl_folder, self.hist_scroll, self.btn_settings, self.profile_info]:
+            for w in [self.lbl_quick_find, self.btn_task_mgr, self.lbl_folder, self.hist_scroll, self.profile_info]:
                 w.show()
 
-    def open_image(self):
-        from PyQt6.QtWidgets import QFileDialog
-        path, _ = QFileDialog.getOpenFileName(self, "Select Image", "", "Images (*.png *.jpg *.jpeg *.webp)")
+    def open_file(self, file_type):
+        if file_type == "Image":
+            filter = "Images (*.png *.jpg *.jpeg *.webp)"
+        else:
+            filter = "Documents (*.pdf *.docx *.txt *.xlsx *.csv *.zip)"
+            
+        path, _ = QFileDialog.getOpenFileName(self, f"Select {file_type}", "", filter)
         if path:
             self.selected_image_path = path
-            pixmap = QPixmap(path)
-            self.preview_img.setPixmap(pixmap)
+            self.selected_file_type = file_type # Add this state
+            
+            if file_type == "Image":
+                pixmap = QPixmap(path)
+                self.preview_img.setPixmap(pixmap)
+            else:
+                # Show file icon for documents
+                icon = qta.icon('fa5s.file-alt', color='#a855f7')
+                self.preview_img.setPixmap(icon.pixmap(QSize(60, 60)))
+            
             self.preview_container.show()
+
+    def show_upward_menu(self, button, menu):
+        # Calculate position to show menu above the button
+        size = menu.sizeHint()
+        # Get button's global top-left position
+        global_pos = button.mapToGlobal(QPoint(0, 0))
+        # Move Y coordinate up by menu height
+        menu.exec(QPoint(global_pos.x(), global_pos.y() - size.height() - 5))
 
     def clear_image(self):
         self.selected_image_path = None
+        self.selected_file_type = None
         self.preview_container.hide()
 
     def emit_send_signal(self):
@@ -500,7 +554,14 @@ class MainInterface(QMainWindow):
         
         if image_path:
             img_lbl = QLabel()
-            img_lbl.setPixmap(QPixmap(image_path).scaled(400, 300, Qt.AspectRatioMode.KeepAspectRatio))
+            if image_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                img_lbl.setPixmap(QPixmap(image_path).scaled(400, 300, Qt.AspectRatioMode.KeepAspectRatio))
+            else:
+                # Document display in bubble
+                import os
+                file_name = os.path.basename(image_path)
+                img_lbl.setText(f"📄 {file_name}")
+                img_lbl.setStyleSheet("color: #a855f7; font-weight: bold; font-size: 13px; background: rgba(168, 85, 247, 0.1); padding: 8px; border-radius: 8px;")
             bubble_layout.addWidget(img_lbl)
 
         bubble_label = QLabel(html_text)

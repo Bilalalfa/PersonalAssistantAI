@@ -1,85 +1,92 @@
 # Ollama Vision - Personal Assistant AI 🤖📸
 
-**Ollama Vision** adalah aplikasi asisten pribadi modern yang menggabungkan kekuatan *Large Language Model* (LLM) dari Ollama dengan kemampuan *Computer Vision*. Aplikasi ini dibangun menggunakan Python dan PyQt6 dengan arsitektur modular untuk memisahkan antarmuka (UI), integrasi AI, dan manajemen database, memberikan performa yang responsif dan estetis.
+**Ollama Vision** is a modern personal assistant application that combines the power of Large Language Models (LLMs) from Ollama with Computer Vision capabilities. Built with Python and PyQt6, it features a modular architecture that separates the UI, AI integration, and database management, delivering a responsive and aesthetically pleasing experience.
 
 ---
 
-## ✨ Fitur Utama
+## ✨ Key Features
 
-- **💬 AI Chat Assistant**: Berinteraksi dengan berbagai model LLM lokal melalui Ollama.
-- **👁️ Vision Support**: Unggah gambar (PNG, JPG, WEBP) untuk dianalisis oleh model vision AI.
-- **📅 Task Manager**: Kelola tugas harian Anda dengan fitur CRUD (Create, Read, Update, Delete).
-- **🗓️ Academic Calendar**: Dashboard kalender untuk memantau tenggat waktu (deadline) tugas.
-- **🗂️ Chat History**: Simpan dan akses kembali sesi obrolan sebelumnya melalui sidebar.
-- **🎨 Modern UI**: Antarmuka gelap (*Dark Mode*) yang elegan dengan desain berbasis kartu dan animasi typing.
+- **💬 AI Chat Assistant**: Interact with various local LLMs via Ollama.
+- **👁️ Vision Support**: Upload images (PNG, JPG, WEBP) for analysis by vision-capable models (e.g., Llava).
+- **📄 Document Upload**: Easily attach documents or images using the new **Plus (+)** menu in the chat interface.
+- **📅 Task Manager**: Manage your daily tasks with full CRUD (Create, Read, Update, Delete) functionality.
+- **🗓️ Academic Calendar**: A built-in calendar dashboard to monitor task deadlines and schedules.
+- **🗂️ Chat History**: Save and revisit previous chat sessions through the interactive sidebar.
+- **🎨 Modern UI**: Elegant Dark Mode interface with glassmorphism-inspired design, card-based layouts, and smooth animations.
 
 ---
 
-## 🛠️ Teknologi & Library
+## 🛠️ Technology Stack
 
-Proyek ini dibangun menggunakan teknologi berikut:
-
-- **Bahasa Pemrograman**: [Python 3.10+](https://www.python.org/)
-- **Framework UI**: [PyQt6](https://www.riverbankcomputing.com/software/pyqt/)
-- **Integrasi LLM**: [LangChain Ollama](https://python.langchain.com/docs/integrations/llms/ollama/)
+- **Language**: [Python 3.10+](https://www.python.org/)
+- **UI Framework**: [PyQt6](https://www.riverbankcomputing.com/software/pyqt/)
+- **AI Integration**: [LangChain Ollama](https://python.langchain.com/docs/integrations/llms/ollama/)
 - **Local LLM Runner**: [Ollama](https://ollama.com/)
 - **Database**: [MySQL](https://www.mysql.com/) (via `mysql-connector-python`)
+- **Icons**: [QtAwesome](https://github.com/spyder-ide/qtawesome)
 
 ---
 
-## 🚀 Persiapan & Instalasi
+## 🚀 Getting Started
 
-### 1. Prasyarat
-Pastikan Anda sudah menginstal:
-- **Python**: [Unduh di sini](https://www.python.org/downloads/)
-- **Ollama**: [Unduh di sini](https://ollama.com/download)
-- **XAMPP / MySQL Server**: Pastikan MySQL berjalan di `localhost:3306`.
+### 1. Prerequisites
+Ensure you have the following installed:
+- **Python**: [Download here](https://www.python.org/downloads/)
+- **Ollama**: [Download here](https://ollama.com/download)
+- **XAMPP / MySQL Server**: Ensure MySQL is running on `localhost:3306`.
 
-### 2. Instalasi Dependensi
-Jalankan perintah berikut di terminal Anda:
+### 2. Install Dependencies
+Run the following command in your terminal:
 ```bash
-pip install pyqt6 langchain_ollama mysql-connector-python
+pip install pyqt6 langchain_ollama mysql-connector-python qtawesome
 ```
 
-### 3. Konfigurasi Database
-Aplikasi akan secara otomatis mencoba membuat database `ollama_assistant` dan tabel `tasks` saat pertama kali dijalankan. Namun, pastikan MySQL Anda aktif dengan akun `root` tanpa password (default XAMPP).
+### 3. Database Configuration
+The application automatically creates the `ollama_assistant` database and `tasks` table on its first run. Ensure your MySQL server is active with the `root` user (default for XAMPP).
 
-### 4. Menjalankan Aplikasi
+### 4. Downloading AI Models
+To use the vision features, you must pull a vision-capable model:
+```bash
+ollama pull llava
+```
+
+### 5. Running the Application
 ```bash
 python app.py
 ```
 
 ---
 
-## 📁 Struktur Proyek
+## 📁 Project Structure
 
 ```text
 PersonalAssistantAI/
-├── app.py                      # Entry point utama & Controller (Integrasi)
+├── app.py                      # Main entry point & Controller
 ├── UI/
-│   ├── ui_components.py          # Definisi antarmuka PyQt6 & Komponen
-│   └── style.py                  # Konfigurasi CSS/QSS dan tema warna
+│   ├── ui_components.py          # PyQt6 interface definitions
+│   └── style.py                  # CSS/QSS configurations and theme
 ├── ai_integration/
-│   └── ai_engine.py              # Integrasi AI (ChatWorker, Vision)
+│   └── ai_engine.py              # AI logic (ChatWorker, Vision encoding)
 ├── Database/
-│   └── db_handler.py             # Manajemen database (Koneksi, Task CRUD)
-├── requirements.txt            # Daftar dependensi library
-└── README.md                   # Dokumentasi proyek
+│   └── db_handler.py             # Database management (Connection, CRUD)
+├── requirements.txt            # List of dependencies
+└── README.md                   # Project documentation
 ```
 
 ---
 
-## 📋 Fitur Task Manager
-- **Add Task**: Tambahkan tugas baru dengan memilih tanggal di kalender sebagai deadline.
-- **Mark Completed**: Tandai tugas yang sudah selesai dengan status hijau.
-- **Delete Task**: Hapus tugas yang sudah tidak diperlukan.
-- **Filter**: Klik tanggal pada kalender untuk melihat tugas spesifik pada hari tersebut.
+## 📋 Task Manager Features
+- **Add Task**: Enter a description and select a deadline on the calendar.
+- **Status Tracking**: Mark tasks as completed to highlight them in green.
+- **Filtering**: Click any date on the calendar to see tasks specific to that day.
+- **Persistence**: All tasks are stored locally in your MySQL database.
 
 ---
 
-## 📝 Catatan Penggunaan
-- Pastikan servis **Ollama** sedang berjalan di latar belakang agar fitur AI dapat berfungsi.
-- Gunakan model seperti `llava` atau `moondream` untuk fitur analisis gambar (Vision).
+## 📝 Usage Notes
+- Make sure the **Ollama service** is running in the background for AI features to work.
+- Use the **(+) icon** in the chat bar to switch between uploading **Images** (for analysis) and **Documents** (as context references).
+- For the best vision experience, models like `llava` or `moondream` are recommended.
 
 ---
 

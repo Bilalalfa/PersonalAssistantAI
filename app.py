@@ -63,8 +63,13 @@ class PersonalAssistantApp:
         # Prepare Images
         base64_images = []
         if img_path:
-            encoded = encode_image(img_path)
-            if encoded: base64_images.append(encoded)
+            if img_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+                encoded = encode_image(img_path)
+                if encoded: base64_images.append(encoded)
+            else:
+                # If it's a document, mention it in the prompt
+                file_name = os.path.basename(img_path)
+                context += f"\n[User attached a document: {file_name}]"
         
         self.ui.loading_anim.show()
         
